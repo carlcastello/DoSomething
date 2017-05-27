@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">DoSomethingApp</string>
+
+    <string name="category">Category</string>
+    <string name="price_point">Price Point</string>
+    <string name="radius">Radius</string>
+
+</resources>

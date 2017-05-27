@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="std_padding">8dp</dimen>
+
+    <!-- Font Size -->
+    <dimen name="text_xsmall">14sp</dimen>
+    <dimen name="text_small">18sp</dimen>
+    <dimen name="text_medium">22sp</dimen>
+    <dimen name="text_large">26sp</dimen>
+    <dimen name="text_xlarge">30sp</dimen>
+
+</resources>
