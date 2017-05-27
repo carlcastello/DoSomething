@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="categories">
+        <item>@string/food</item>
+        <item>@string/park_landmark</item>
+        <item>@string/events</item>
+        <item>@string/activities</item>
+        <item>@string/miscellaneous</item>
+    </string-array>
+</resources>

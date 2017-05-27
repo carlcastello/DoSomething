@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/std_padding"
+    android:paddingBottom="@dimen/std_padding"
+    android:paddingLeft="25dp"
+    android:paddingRight="25dp">
+
+    <EditText
+        android:text="$ 25.00"
+        android:gravity="right"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/price_edit"/>
+
+</RelativeLayout>

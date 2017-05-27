@@ -1,8 +1,19 @@
 <resources>
     <string name="app_name">DoSomethingApp</string>
 
+    <string name="done">Done</string>
+    <string name="cancel">Cancel</string>
+
     <string name="category">Category</string>
+    <string name="categories">Categories</string>
     <string name="price_point">Price Point</string>
     <string name="radius">Radius</string>
+
+    <string name="food">Food and Restaurant</string>
+    <string name="park_landmark">Parks and Landmarks</string>
+    <string name="events">Events</string>
+    <string name="activities">Activities</string>
+    <string name="miscellaneous">Miscellaneous</string>
+
 
 </resources>
