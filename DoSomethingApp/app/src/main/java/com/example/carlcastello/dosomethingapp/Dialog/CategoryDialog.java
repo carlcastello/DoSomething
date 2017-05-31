@@ -2,6 +2,7 @@ package com.example.carlcastello.dosomethingapp.Dialog;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -9,8 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.carlcastello.dosomethingapp.Listeners.DialogListener;
 import com.example.carlcastello.dosomethingapp.R;
 
 import java.util.ArrayList;
@@ -22,7 +25,7 @@ import java.util.ArrayList;
 public class CategoryDialog extends DialogFragment {
 
     private View view;
-    private ArrayList mSelectedItems;
+    private DialogListener dialogListener;
 
     public CategoryDialog() {
         // Empty constructor is required for DialogFragment
@@ -30,39 +33,39 @@ public class CategoryDialog extends DialogFragment {
         // Use `newInstance` instead as shown below
     }
 
-    public static CategoryDialog newInstance(String title) {
+    public static CategoryDialog newInstance(String title,ArrayList<Boolean> selectedList, DialogListener dialogListener) {
         CategoryDialog frag = new CategoryDialog();
         Bundle args = new Bundle();
         args.putString("title", title);
+        args.putSerializable("dialogListener",dialogListener);
+        args.putSerializable("selectedList",selectedList);
         frag.setArguments(args);
         return frag;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        this.mSelectedItems = new ArrayList();
-
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+        //  https://stackoverflow.com/questions/14640397/dialogfragment-throws-classcastexception-if-called-from-fragment
+        this.dialogListener = (DialogListener) getArguments().getSerializable("dialogListener");
+
+        ArrayList<Boolean> selectedList = (ArrayList<Boolean>) getArguments().getSerializable("selectedList");
+        boolean[] checkedList = new boolean[selectedList.size()];
+        for (int i = 0; i < selectedList.size(); ++i) {
+            checkedList[i] = selectedList.get(i);
+        }
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
 //        this.view = inflater.inflate(R.layout.dialog_category, null);
         builder.setTitle(R.string.categories)
-                .setMultiChoiceItems(R.array.categories, null,
+                .setMultiChoiceItems(R.array.categories, checkedList,
                         new DialogInterface.OnMultiChoiceClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which,
                                                 boolean isChecked) {
-                                if (isChecked) {
-                                    // If the user checked the item, add it to the selected items
-                                    mSelectedItems.add(which);
-                                } else if (mSelectedItems.contains(which)) {
-                                    // Else, if the item is already in the array, remove it
-                                    mSelectedItems.remove(Integer.valueOf(which));
-                                }
                             }
                         })
                 // Add action buttons
@@ -87,13 +90,23 @@ public class CategoryDialog extends DialogFragment {
         //super.onStart() is where dialog.show() is actually called on the underlying dialog, so we have to do it after this point
         super.onStart();
 
-        AlertDialog dialog = (AlertDialog) getDialog();
+        final AlertDialog dialog = (AlertDialog) getDialog();
         if(dialog != null) {
             Button positiveButton = (Button) dialog.getButton(Dialog.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(),"Dialog Fragment",Toast.LENGTH_SHORT).show();
+                    ListView list = dialog.getListView();
+                    int selected = 0;
+                    ArrayList<Boolean> stateOfList =  new ArrayList<>();
+                    for (int i = 0; i < list.getCount(); ++i) {
+                        boolean checked = list.isItemChecked(i);
+                        stateOfList.add(checked);
+                        if (checked) {
+                            selected += 1;
+                        }
+                    }
+                    dialogListener.categoryDialogResponse(stateOfList,selected);
                     dismiss();
                 }
             });
