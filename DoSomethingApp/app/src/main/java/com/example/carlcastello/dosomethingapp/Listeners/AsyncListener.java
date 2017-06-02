@@ -1,5 +1,8 @@
 package com.example.carlcastello.dosomethingapp.Listeners;
 
+import com.example.carlcastello.dosomethingapp.Controller.PlaceController;
+import com.example.carlcastello.dosomethingapp.Model.Place;
+
 import org.json.JSONObject;
 
 /**
@@ -7,6 +10,6 @@ import org.json.JSONObject;
  */
 
 public interface AsyncListener {
-    public abstract void googlePlaceData(JSONObject jsonObject);
+    public abstract void googlePlaceData(PlaceController placeController);
 
 }

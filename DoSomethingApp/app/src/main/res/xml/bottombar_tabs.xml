@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <tabs>
+        <tab
+            id="@+id/tab_random"
+            activeColor="@color/colorWhite"
+            inActiveColor="@color/colorWhite"
+            title="Random" />
+        <tab
+            id="@+id/tab_favourites"
+            activeColor="@color/colorWhite"
+            inActiveColor="@color/colorWhite"
+            title="Favourites" />
+        <tab
+            id="@+id/tab_recent"
+            activeColor="@color/colorWhite"
+            inActiveColor="@color/colorWhite"
+            title="Recent" />
+        <tab
+            id="@+id/tab_events"
+            activeColor="@color/colorWhite"
+            inActiveColor="@color/colorWhite"
+            title="Events" />
+        <tab
+            id="@+id/tab_categories"
+            activeColor="@color/colorWhite"
+            inActiveColor="@color/colorWhite"
+            title="Categories" />
+    </tabs>
+</PreferenceScreen>

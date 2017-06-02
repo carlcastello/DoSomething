@@ -10,33 +10,34 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
 
 import com.example.carlcastello.dosomethingapp.Controller.GetPlacesController;
+import com.example.carlcastello.dosomethingapp.Controller.PlaceController;
+import com.example.carlcastello.dosomethingapp.Controller.PlaceListController;
+import com.example.carlcastello.dosomethingapp.Fragments.CategoriesFragment;
+import com.example.carlcastello.dosomethingapp.Fragments.EventsFragment;
+import com.example.carlcastello.dosomethingapp.Fragments.FavouritesFragment;
 import com.example.carlcastello.dosomethingapp.Fragments.InfoFragment;
 import com.example.carlcastello.dosomethingapp.Fragments.MainFragment;
+import com.example.carlcastello.dosomethingapp.Fragments.RecentFragment;
 import com.example.carlcastello.dosomethingapp.Listeners.AsyncListener;
 import com.example.carlcastello.dosomethingapp.Listeners.FragmentListener;
-import com.example.carlcastello.dosomethingapp.Model.Place;
 import com.example.carlcastello.dosomethingapp.R;
-
-import org.json.JSONObject;
+import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.OnTabReselectListener;
+import com.roughike.bottombar.OnTabSelectListener;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, FragmentListener, LocationListener, AsyncListener {
+public class MainActivity extends AppCompatActivity implements FragmentListener, LocationListener, AsyncListener {
 
     private LocationManager locationManager;
     private FragmentManager fragmentManager;
@@ -50,17 +51,97 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        // Initialize Fragment manager
+        this.fragmentManager = getSupportFragmentManager();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        // Initialize Location
+        initLocation();
 
+        // Initialize Bottom Bar
+        initBottomBar();
+    }
+
+    // This initialize the bottom bar
+    private void initBottomBar(){
+        BottomBar bottomBar = (BottomBar) findViewById(R.id.bottomBar);
+        bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
+            @Override
+            public void onTabSelected(@IdRes int tabId) {
+                tabRespond(tabId);
+            }
+        });
+
+        bottomBar.setOnTabReselectListener(new OnTabReselectListener() {
+            @Override
+            public void onTabReSelected(@IdRes int tabId) {
+                tabRespond(tabId);
+            }
+        });
+    }
+
+    // This handles the tab onClicks
+    private void tabRespond(int tabId) {
+        boolean canback = getSupportFragmentManager().getBackStackEntryCount()>0;
+        if (canback) {
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+
+        if (tabId == R.id.tab_random) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            MainFragment mainFragment = new MainFragment().newInstance();
+            transaction.replace(R.id.fragment_container, mainFragment, "mainFragment");
+            transaction.commit();
+        } else if (tabId == R.id.tab_favourites) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            FavouritesFragment favouritesFragment = new FavouritesFragment().newInstance();
+            transaction.replace(R.id.fragment_container, favouritesFragment, "favouritesFragment");
+            transaction.commit();
+        } else if (tabId == R.id.tab_recent) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            RecentFragment recentFragment = new RecentFragment().newInstance();
+            transaction.replace(R.id.fragment_container, recentFragment, "recentFragment");
+            transaction.commit();
+        } else if (tabId == R.id.tab_events) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            EventsFragment eventsFragment = new EventsFragment().newInstance();
+            transaction.replace(R.id.fragment_container, eventsFragment, "eventFragment");
+            transaction.commit();
+        } else if (tabId == R.id.tab_categories) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            CategoriesFragment categoriesFragment = new CategoriesFragment().newInstance();
+            transaction.replace(R.id.fragment_container, categoriesFragment, "categoriesFragment");
+            transaction.commit();
+        }
+    }
+
+    // This handles the main Fragment button
+    public void proceedButtonResponse(ArrayList<Boolean> categories, double pricePoint, int radius) {
+        GetPlacesController getPlacesController = new GetPlacesController(this,location,categories,pricePoint, radius);
+        getPlacesController.execute();
+    }
+
+    // Show Response of the query
+    @Override
+    public void googlePlaceData(PlaceController placeController) {
+
+
+        PlaceListController placeListController = new PlaceListController(this);
+        placeListController.addPlace(placeController.getPlace());
+        placeListController.save();
+
+        FragmentTransaction transaction = this.fragmentManager.beginTransaction();
+        InfoFragment infoFragment = new InfoFragment().newInstance(placeController,placeListController.getSize() - 1);
+        transaction.replace(R.id.fragment_container,infoFragment,"infoFragment");
+        transaction.addToBackStack(null);
+        transaction.commit();
+
+    }
+
+
+    // This initialize the location
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void initLocation() {
         this.locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET
@@ -68,70 +149,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         getLocationOnRequest();
-
-
-        if (savedInstanceState == null) {
-
-            this.fragmentManager = getSupportFragmentManager();
-            FragmentTransaction transaction = this.fragmentManager.beginTransaction();
-            MainFragment mainFragment = new MainFragment();
-            transaction.add(R.id.fragment_container, mainFragment, "mainFragment");
-            transaction.commit();
-        }
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.category_one) {
-            // Handle the camera action
-        } else if (id == R.id.category_two) {
-
-        } else if (id == R.id.category_three) {
-
-        } else if (id == R.id.category_four) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    public void proceedButtonResponse(ArrayList<Boolean> categories, double pricePoint, int radius) {
-        GetPlacesController getPlacesController = new GetPlacesController(this,location,categories,pricePoint, radius);
-        getPlacesController.execute();
-    }
-
-    @Override
-    public void googlePlaceData(JSONObject jsonObject) {
-
-        Place place = new Place(jsonObject);
-        FragmentTransaction transaction = this.fragmentManager.beginTransaction();
-        InfoFragment infoFragment = new InfoFragment().newInstance(place);
-        transaction.replace(R.id.fragment_container,infoFragment,"infoFragment");
-        transaction.addToBackStack(null);
-        transaction.commit();
-
-    }
-
+    // Initialize location
     private void getLocationOnRequest(){
         Criteria criteria = new Criteria();
         String provider = locationManager.getBestProvider(criteria, true);
@@ -173,27 +193,5 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
     }
-
-    //    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main2, menu);
-//        return true;
-//    }
-
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 
 }
